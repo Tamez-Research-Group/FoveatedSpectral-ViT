@@ -94,6 +94,7 @@ import random
 import shutil
 import sys
 import gc
+import time
 from collections import deque
 
 # stdout/stderr default to the system ANSI codepage (not UTF-8) whenever this
@@ -223,6 +224,12 @@ VIT_ARCH = dict(
 
 # Number of top model states kept in memory for final weight averaging.
 SAVE_TOP_K = 5
+
+# Pause between configs (seconds) so persistent DataLoader workers from the
+# just-finished config actually finish OS-level teardown before the next
+# config spawns fresh ones -- see the cooldown call site for the full
+# rationale. Overridable via --config_cooldown.
+CONFIG_TRANSITION_COOLDOWN_S = 10
 
 
 # ---------------------------------------------------------------------------
@@ -655,7 +662,22 @@ def train_config(
         **VIT_ARCH,
     ).to(device)
 
-    criterion = nn.BCEWithLogitsLoss() if multi_label else nn.CrossEntropyLoss()
+    if multi_label:
+        # Per-label pos_weight = neg_count/pos_count, the standard
+        # BCEWithLogitsLoss rebalancing formula -- without it, a model can
+        # trivially reach ~95% "accuracy" on Chest by predicting all-negative
+        # for every rare label (confirmed: macro-F1 collapsed to ~0.01 across
+        # all 8 configs without this). Capped at 20x -- Chest's rarest label
+        # (~0.18% positive rate) gives an uncapped ratio near 550x, large
+        # enough to destabilize training via loss/gradient spikes.
+        train_labels = np.asarray(train_loader.dataset.labels)
+        pos_counts   = train_labels.sum(axis=0)
+        neg_counts   = len(train_labels) - pos_counts
+        pos_weight   = np.clip(neg_counts / np.maximum(pos_counts, 1), None, 20.0)
+        pos_weight_t = torch.tensor(pos_weight, dtype=torch.float32, device=device)
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight_t)
+    else:
+        criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=hp["lr"], weight_decay=hp["weight_decay"]
     )
@@ -911,6 +933,13 @@ def main() -> None:
         help="Comma-separated subset of config IDs to run (e.g. 'C1,C6,C8'). "
              "Default: all 8.",
     )
+    parser.add_argument(
+        "--config_cooldown", type=int, default=CONFIG_TRANSITION_COOLDOWN_S,
+        help="Seconds to pause between configs, letting the previous config's "
+             "persistent DataLoader workers fully terminate before the next "
+             "config spawns new ones -- mitigates a config-transition hang "
+             f"(default: {CONFIG_TRANSITION_COOLDOWN_S}s). Set to 0 to disable.",
+    )
     args = parser.parse_args()
 
     dataset = args.dataset
@@ -996,6 +1025,20 @@ def main() -> None:
             torch.cuda.empty_cache()
         state["curves"][config_id]    = curve
         _save_state(state_path, state)
+
+        # gc.collect() triggers Python-side cleanup of the just-finished
+        # config's persistent DataLoader workers, but doesn't block until the
+        # OS actually finishes tearing those processes down -- with
+        # persistent_workers=True, that teardown isn't instantaneous. The next
+        # config's fresh DataLoader spawning 4 new workers while the old ones
+        # are still mid-teardown is a plausible cause of the config-transition
+        # hangs observed in practice (contention over a shared-memory handle
+        # or similar that hasn't been released yet). A short cooldown gives
+        # the OS time to actually finish before the next spawn.
+        if args.config_cooldown > 0:
+            print(f"  Cooling down {args.config_cooldown}s before next config "
+                  f"(letting worker processes fully terminate)...")
+            time.sleep(args.config_cooldown)
 
     # ----- Write results CSV -----
     if all_summaries:

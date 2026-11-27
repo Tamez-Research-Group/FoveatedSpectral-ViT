@@ -84,6 +84,10 @@ def train_one_epoch_multilabel(
                 if l1_loss is not None:
                     loss = loss + l1_loss
             scaler.scale(loss).backward()
+            # Chest's per-label pos_weight can be large (rarest label ~500x) --
+            # clip to guard against loss/gradient spikes from that reweighting.
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             scaler.step(optimizer)
             scaler.update()
         else:
@@ -93,6 +97,7 @@ def train_one_epoch_multilabel(
             if l1_loss is not None:
                 loss = loss + l1_loss
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
         total_loss += loss.item() * imgs.size(0)

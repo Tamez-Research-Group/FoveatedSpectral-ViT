@@ -202,8 +202,12 @@ MEDMNIST_INFO = {
     "organs":    (OrganSMNIST,    False),
 }
 
-#: Datasets where class imbalance justifies WeightedRandomSampler.
-_WEIGHTED_DATASETS = {"breast", "pneumonia", "derma", "retina"}
+#: Datasets where class imbalance justifies WeightedRandomSampler. Tissue's
+#: imbalance ratio (9.0x, largest:smallest class) exceeds retina's (7.4x),
+#: which is already weighted -- confirmed via a real test-set AUC gap vs.
+#: SOTA (-0.071, the second-largest gap in the project after chest) that
+#: this was actually hurting results, not just a theoretical concern.
+_WEIGHTED_DATASETS = {"breast", "pneumonia", "derma", "retina", "tissue"}
 
 #: Datasets where each sample carries multiple independent, non-mutually-
 #: exclusive binary labels (e.g. ChestMNIST's 14 disease flags) rather than
