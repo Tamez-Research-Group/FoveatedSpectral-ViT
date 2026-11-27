@@ -26,10 +26,10 @@ Radiologists and dermatologists frame a study so that the finding sits near the 
 
 | | |
 |---|---|
-| 🪶 **Small** | 3.38 M parameters in every config, about 3.5× fewer than ResNet-18 and 7.6× fewer than ResNet-50. |
-| 🆓 **Nearly free priors** | Spiral ordering is a fixed index permutation, with no weights and no FLOPs. The learned-DCT gate adds 196 parameters. |
-| 🎯 **Strong where it fits** | Across 18 methods (8 configs plus 10 published baselines), our configs take the top 3 on **OCT** by accuracy and AUC, the top 3 on **Blood** by AUC, and first on **OrganC** by AUC. |
-| 🔬 **Honest ablation** | A full 2 × 2 × 2 factorial design with 95 % bootstrap CIs, McNemar tests and Cohen's κ. Each prior helps or hurts depending on whether the modality really centres its findings. |
+| **Small** | 3.38 M parameters in every config, about 3.5× fewer than ResNet-18 and 7.6× fewer than ResNet-50. |
+| **Nearly free priors** | Spiral ordering is a fixed index permutation, with no weights and no FLOPs. The learned-DCT gate adds 196 parameters. |
+| **Strong where it fits** | Across 18 methods (8 configs plus 10 published baselines), our configs take the top 3 on **OCT** by accuracy and AUC, the top 3 on **Blood** by AUC, and first on **OrganC** by AUC. |
+| **Honest ablation** | A full 2 × 2 × 2 factorial design with 95 % bootstrap CIs, McNemar tests and Cohen's κ. Each prior helps or hurts depending on whether the modality really centres its findings. |
 
 ## Method
 
