@@ -2,7 +2,11 @@
 
 # FoveatedSpectral-ViT
 
-**A foveated, frequency-aware Vision Transformer for medical image classification**
+**Do Spatial and Spectral Priors Help Compact Vision Transformers for Medical Image Classification? A Factorial Study on MedMNIST**
+
+Eduardo de Avila-Armenta, Gerardo A. Fumagal-González, Jorge A. Garza-Abdala, Juan S. Toledo-Rios, Daniel Lozano-Gutiérrez, Diana S. M. Rosales-Gurmendi, Karla I. Cruz-Ornelas, Esteban D. Elizondo-Pereo, Alejandro Santos-Diaz, Jose G. Tamez-Peña
+
+<sub>Tecnológico de Monterrey · School of Engineering and Sciences · School of Medicine and Health Sciences</sub>
 
 *Spiral token ordering · learned-DCT patch embedding · Gaussian foveal attention bias*
 
@@ -14,7 +18,7 @@
 
 </div>
 
-Code accompanying the manuscript submitted to *IEEE Access* (article citation to be added on publication).
+Code accompanying the manuscript submitted to *IEEE Access* (article citation to be added on publication). To cite the code, see [Citation](#citation) and [CITATION.cff](CITATION.cff).
 
 Radiologists and dermatologists frame a study so that the finding sits near the centre of the image. FoveatedSpectral-ViT turns that habit into three lightweight priors on an otherwise standard Vision Transformer. Each prior can be switched on or off on its own, and all eight combinations (configs **C1–C8**) are trained from scratch and evaluated on all **12 MedMNIST v2 datasets at native 224 × 224 resolution**.
 
@@ -200,14 +204,20 @@ All experiments use the public [MedMNIST v2](https://medmnist.com/) benchmark (2
 
 ## Citation
 
-The article citation will be added on publication. Until then, please cite the repository:
+The article citation (volume, pages, DOI) will be added on publication. Until then, please cite:
 
 ```bibtex
-@misc{foveatedspectralvit,
-  title        = {{FoveatedSpectral-ViT}: code for the MedMNIST full-resolution ablation study},
-  author       = {{Tamez Research Group}},
-  howpublished = {\url{https://github.com/Tamez-Research-Group/FoveatedSpectral-ViT}},
-  note         = {Manuscript submitted to IEEE Access}
+@unpublished{deavila2026priors,
+  title  = {Do Spatial and Spectral Priors Help Compact Vision Transformers for Medical
+            Image Classification? {A} Factorial Study on {MedMNIST}},
+  author = {de Avila-Armenta, Eduardo and Fumagal-Gonz{\'a}lez, Gerardo A. and
+            Garza-Abdala, Jorge A. and Toledo-Rios, Juan S. and
+            Lozano-Guti{\'e}rrez, Daniel and Rosales-Gurmendi, Diana S. M. and
+            Cruz-Ornelas, Karla I. and Elizondo-Pereo, Esteban D. and
+            Santos-Diaz, Alejandro and Tamez-Pe{\~n}a, Jose G.},
+  note   = {Manuscript submitted to IEEE Access. Code:
+            \url{https://github.com/Tamez-Research-Group/FoveatedSpectral-ViT}},
+  year   = {2026}
 }
 ```
 
